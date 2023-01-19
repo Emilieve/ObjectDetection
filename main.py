@@ -18,6 +18,8 @@ configPath = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
 weightsPath = 'frozen_inference_graph.pb'
 threshold = 0.5
 
+coordinatesStart = []
+coordinatesFinish = []
 #settings for cv2
 net = cv2.dnn_DetectionModel(weightsPath, configPath)
 net.setInputSize(320,320)
@@ -34,10 +36,6 @@ while True:
 
     if len(classIds) != 0:
         for classId, confidence, box in zip(classIds.flatten(), confs.flatten(), bbox): #going through all class IDs, confidences and bbox
-
-
-            print(box)
-            print(box[2], box[3])
             cv2.rectangle(img,box,color=(0,255,0),thickness=3) #drawing the box (image, coordinates, color, thickness)
             x, y, w, h = box
             cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),3)#drawing the box (image, coordinates, color, thickness)
@@ -45,11 +43,21 @@ while True:
             centerX = int(w/2 + x)
             centerY = int(h/2 + y)
 
+            if classNames[classId-1] == "cell phone": #change this to as what the object is detected
+                coordinatesStart.append((centerX, centerY))
+            if classNames[classId-1] == "person":
+                coordinatesFinish.append((centerX, centerY))
+
             cv2.circle(img, (centerX, centerY), 10, color=(0, 255, 0), thickness=3)
             # cv2.circle(img, (centerX, centerY), 10, color=(0, 255, 0), thickness=3)
 
             cv2.putText(img,classNames[classId-1].upper(),(box[0]+10, box[1]+30), cv2.FONT_HERSHEY_COMPLEX,1,(0,255,0),2) #add text and take is form the coconames, set location, font, scale, color, thickness
 
-    #show image
+    print(coordinatesStart)
+    print(coordinatesFinish)
+    coordinatesStart.clear()
+    coordinatesFinish.clear()
+
     cv2.imshow("Output", img)
+
     cv2.waitKey(1)
